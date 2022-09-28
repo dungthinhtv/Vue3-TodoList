@@ -2,6 +2,8 @@ import Vuex from 'vuex';
 import shortid from 'shortid';
 import axios from 'axios';
 
+import { v4 as uuidv4 } from 'uuid';
+
 export default Vuex.createStore({
   state: {
     todolist: [],
@@ -14,7 +16,7 @@ export default Vuex.createStore({
     ADD_TODO: (state, payload) => {
       state.todolist.unshift({
         ...payload.todoitem,
-        id: shortid.generate(),
+        id: uuidv4(),
         completed: false,
       });
       state.todoitem = { id: '', title: '', userId: '', completed: false };
@@ -35,11 +37,12 @@ export default Vuex.createStore({
       state.todolist[index] = payload.todoitem;
     },
     INITIALIZE_TODOITEM: (state, payload) => {
-      if (payload && payload.todoitem) {
-        state.todoitem = payload.todoitem;
+      if (payload && payload.data) {
+        state.todoitem = payload.data;
       } else {
         state.todoitem = { userId: '', id: '', title: '', completed: false };
       }
+      //   console.log(state.todoitem);
     },
     setLoading: (state, payload) => {
       if (payload) state.loading = true;
@@ -79,11 +82,20 @@ export default Vuex.createStore({
     TOGGLE_DONE: (store, payload) => {
       store.commit('TOGGLE_DONE', payload);
     },
-    UPDATE_TODO: (store, payload) => {
+    UPDATE_TODO: async (store, payload) => {
+      try {
+        await axios.put(
+          `https://jsonplaceholder.typicode.com/todos/1`,
+          payload
+        );
+        commit('UPDATE_TODO', payload);
+      } catch (error) {
+        console.log(error);
+      }
       store.commit('UPDATE_TODO', payload);
     },
-    INITIALIZE_TODOITEM: (store, payload) => {
-      store.commit('INITIALIZE_TODOITEM', payload);
+    INITIALIZE_TODOITEM: async ({ commit }, payload) => {
+      commit('INITIALIZE_TODOITEM', payload);
     },
     setLoading: (store, payload) => {
       store.commit('setLoading', payload);
